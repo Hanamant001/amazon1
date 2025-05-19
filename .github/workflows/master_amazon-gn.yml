@@ -60,7 +60,7 @@ jobs:
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'amazon-gn'  # Your Azure Web App name
+          app-name: 'amazon-gn'  # Replace with your actual App Service name
           slot-name: 'Production'
           package: '*.war'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_BB3D33AC8D0E438898BD5A22644DBE8A }}
+          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
