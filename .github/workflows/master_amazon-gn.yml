@@ -1,4 +1,4 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
+# Docs for Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
 name: Build and deploy WAR app to Azure Web App - amazon-gn
@@ -13,12 +13,13 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read #This is required for actions/checkout
+      contents: read  # Required for actions/checkout
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Set up Java version
+      - name: Set up Java 17 (Microsoft distribution)
         uses: actions/setup-java@v4
         with:
           java-version: '17'
@@ -27,11 +28,17 @@ jobs:
       - name: Build with Maven
         run: mvn clean install
 
-      - name: Upload artifact for deployment job
+      - name: Check if WAR file exists
+        run: |
+          echo "Listing WAR files in target/"
+          ls -l target
+          test -f target/*.war || (echo "WAR file not found!" && exit 1)
+
+      - name: Upload WAR artifact
         uses: actions/upload-artifact@v4
         with:
           name: java-app
-          path: '${{ github.workspace }}/target/*.war'
+          path: target/*.war
 
   deploy:
     runs-on: ubuntu-latest
@@ -39,18 +46,21 @@ jobs:
     environment:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-    
+
     steps:
-      - name: Download artifact from build job
+      - name: Download WAR artifact
         uses: actions/download-artifact@v4
         with:
           name: java-app
-      
+
+      - name: List downloaded files (debugging)
+        run: ls -l
+
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'amazon-gn'
+          app-name: 'amazon-gn'  # Your Azure Web App name
           slot-name: 'Production'
           package: '*.war'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_BB3D33AC8D0E438898BD5A22644DBE8A }}
